@@ -16,9 +16,9 @@ app = Flask(__name__)
 
 
 @app.route('/')
-def hello():
+def my_form():
     """Return a friendly HTTP greeting."""
-    return 'Hello World!'
+    return render_template("my-form.html")
 
 
 @app.errorhandler(404)
