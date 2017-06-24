@@ -7,10 +7,9 @@ from flask import send_file
 from model import style_transfer
 
 from flask import Flask, current_app, request, jsonify
-import io
 import model
-import base64
-import logging
+
+
 import requests
 import time
 
@@ -46,13 +45,13 @@ def my_form_post():
     # data = base64.b64decode(data)
 
     # image = io.BytesIO(data)
-    style_transfer('profile.jpg','DJ.jpg')
+    style_transfer('profile.jpg','style.jpg')
 
     result_dir = os.getcwd() + "/static/css/images"
 
     urls = [f for f in os.listdir(result_dir)]
 
-    return render_template("show_images.html", urls =urls)
+    return render_template("show_images.html", urls)
     #return "Hello World"
 
 
