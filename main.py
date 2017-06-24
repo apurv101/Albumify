@@ -32,7 +32,7 @@ def my_form_post():
     #     f.write(requests.get(text).content)
     #     f.close()
         #style_transfer("images/profile.jpg")
-        style_transfer()
+    style_transfer()
 
     # return send_file(outputImagePath,mimetype='image/jpg')
 

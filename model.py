@@ -47,18 +47,8 @@ def style_transfer():
                                                    'block4_conv1',
                                                    'block5_conv1'))
 
-        # Create styled image
-        #neural_styler.fit(canvas='picture', optimization_method='L-BFGS-B')
-        # or
-        # neural_styler.fit(canvas='picture', optimization_method='CG')
-
-        # Try also
-        #
     neural_styler.fit(canvas='random_from_style', optimization_method='TNC')
-        # and
-        # neural_styler.fit(canvas='style')
-        #
-        # with different optimization algorithms (CG, etc.)
+
 
 
 class NeuralStyler(object):
