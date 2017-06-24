@@ -23,19 +23,18 @@ def my_form():
 @app.route('/', methods=['POST'])
 def my_form_post():
     text = request.form['text']
-    imageName = text.split("/")[-1]
-    contentImagePath = "images/input/"+imageName
-    outputImagePath = "images/output/"+imageName
-    # print(file_path)
-    if not os.path.exists(outputImagePath):
-        f = open(contentImagePath, 'wb')
-        f.write(requests.get(text).content)
-        f.close()
+    # imageName = text.split("/")[-1]
+    # contentImagePath = "images/input/"+imageName
+    # outputImagePath = "images/output/"+imageName
+    # # print(file_path)
+    # if not os.path.exists(outputImagePath):
+    #     f = open(contentImagePath, 'wb')
+    #     f.write(requests.get(text).content)
+    #     f.close()
         #style_transfer("images/profile.jpg")
-        style_transfer(sourceImagePath=contentImagePath,outputPath=outputImagePath, filterPath="images/styles/darksideofthemoon.jpeg")
-        #time.sleep(900)
+        style_transfer()
 
-    return send_file(outputImagePath,mimetype='image/jpg')
+    # return send_file(outputImagePath,mimetype='image/jpg')
 
 
 @app.errorhandler(404)
