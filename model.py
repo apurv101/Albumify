@@ -24,41 +24,50 @@ import keras.backend as K
 
 from keras.applications import vgg16, vgg19
 from keras.applications.imagenet_utils import preprocess_input
+from keras.preprocessing import image
 
 from scipy.optimize import minimize
 from scipy.misc import imread, imsave, imresize
 import PIL.Image
 
-def style_transfer():
+def style_transfer(content, style):
     print('start')
-    neural_styler = NeuralStyler(content_image_path='input/maggie-grace-portrait-wallpapers_14105_1024x768.jpg',
-                                     style_image_path='output/darksideofthemoon.jpg',
+    # content_image = image.load_img(content, target_size=(150, 150))
+    # style_image = image.load_img(style, target_size=(150, 150))
 
-                                     # If you have a local copy of Keras VGG16/19 weights
-                                     # weights_filepath='vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
 
-                                     Content_loss_function_weight=0.4,
-                                     Style_loss_function_weight=0.6,
-                                     verbose=True,
-                                     content_layer='block4_conv1',
-                                     style_layers=('block1_conv1',
-                                                   'block2_conv1',
-                                                   'block3_conv1',
-                                                   'block4_conv1',
-                                                   'block5_conv1'))
+    neural_styler = NeuralStyler(picture_image_filepath=content,
+                                 style_image_filepath=style,
+                                 destination_folder='\yo',
 
-    neural_styler.fit(canvas='random_from_style', optimization_method='TNC')
+                                 # If you have a local copy of Keras VGG16/19 weights
+                                 # weights_filepath='vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
+
+                                 alpha_picture=0.4,
+                                 alpha_style=0.6,
+                                 verbose=True,
+                                 picture_layer='block4_conv1',
+                                 style_layers=('block1_conv1',
+                                               'block2_conv1',
+                                               'block3_conv1',
+                                               'block4_conv1',
+                                               'block5_conv1'))
+
+    # Create styled image
+    neural_styler.fit(canvas='picture', iterations = 1, optimization_method='L-BFGS-B')
+
+    # return
 
 
 
 class NeuralStyler(object):
-    def __init__(self, content_image_path, style_image_path,
+    def __init__(self, picture_image_filepath, style_image_filepath, destination_folder,
                  weights_filepath=None,
-                 Content_loss_function_weight=1.0, Style_loss_function_weight=0.00001,
+                 alpha_picture=1.0, alpha_style=0.00001,
                  save_every_n_steps=10,
                  verbose=False,
                  convnet='VGG16',
-                 content_layer='block5_conv1',
+                 picture_layer='block5_conv1',
                  style_layers=('block1_conv1',
                                'block2_conv1',
                                'block3_conv1',
@@ -66,34 +75,30 @@ class NeuralStyler(object):
                                'block5_conv1')):
         
 
-        if content_image_path is None:
-            raise ValueError('Missing content image')
-        if style_image_path is None:
-            raise ValueError('Missing style image')
+        if picture_image_filepath is None or style_image_filepath is None or destination_folder is None:
+            raise ValueError('Picture, style image or destination filepath is/are missing')
+
         if convnet not in ('VGG16', 'VGG19'):
             raise ValueError('Convnet must be one of: VGG16 or VGG19')
 
-        self.content_image_path = content_image_path
-        self.style_image_path = style_image_path
+        self.picture_image_filepath = picture_image_filepath
+        self.style_image_filepath = style_image_filepath
+        self.destination_folder = destination_folder
 
-        self.Content_loss_function_weight = Content_loss_function_weight
-        self.Style_loss_function_weight = Style_loss_function_weight
+        self.alpha_picture = alpha_picture
+        self.alpha_style = alpha_style
         self.save_every_n_steps = save_every_n_steps
         self.verbose = verbose
-        
-        
-        self.layers = style_layers if content_layer in style_layers else style_layers + (content_layer,)
+
+        self.layers = style_layers if picture_layer in style_layers else style_layers + (picture_layer,)
 
         self.iteration = 0
         self.step = 0
         self.styled_image = None
 
-        # VGG
-        print('Using VGG')
-        if convnet == 'VGG16':
-            convnet = vgg16.VGG16(include_top=False, weights='imagenet' if weights_filepath is None else None)
-        else:
-            convnet = vgg19.VGG19(include_top=False, weights='imagenet' if weights_filepath is None else None)
+        # Create convnet
+        print('Creating convolutional network')
+        convnet = vgg16.VGG16(include_top=False, weights='imagenet' if weights_filepath is None else None)
 
         if weights_filepath is not None:
             print('Loading model weights from: %s' % weights_filepath)
@@ -104,22 +109,22 @@ class NeuralStyler(object):
                                              outputs=[convnet.get_layer(t).output for t in self.layers])
 
         # Load picture image
-        original_picture_image = imread(content_image_path)
+        original_picture_image = imread(picture_image_filepath)
 
         self.image_shape = (original_picture_image.shape[0], original_picture_image.shape[1], 3)
         self.e_image_shape = (1,) + self.image_shape
         self.picture_image = self.pre_process_image(original_picture_image.reshape(self.e_image_shape).astype(K.floatx()))
 
-        print('Loading picture: %s (%dx%d)' % (self.content_image_path,
+        print('Loading picture: %s (%dx%d)' % (self.picture_image_filepath,
                                                self.picture_image.shape[2],
                                                self.picture_image.shape[1]))
 
-        picture_tensor = K.variable(value=self.get_convnet_output([self.picture_image])[self.layers.index(content_layer)])
+        picture_tensor = K.variable(value=self.get_convnet_output([self.picture_image])[self.layers.index(picture_layer)])
 
         # Load style image
-        original_style_image = imread(self.style_image_path)
+        original_style_image = imread(self.style_image_filepath)
 
-        print('Loading style image: %s (%dx%d)' % (self.style_image_path,
+        print('Loading style image: %s (%dx%d)' % (self.style_image_filepath,
                                                    original_style_image.shape[1],
                                                    original_style_image.shape[0]))
 
@@ -131,14 +136,11 @@ class NeuralStyler(object):
                   (self.picture_image.shape[2], self.picture_image.shape[1]))
 
             original_style_image = imresize(original_style_image,
-                                                 size=(self.picture_image.shape[1], self.picture_image.shape[2]),
-                                             interp='lanczos')
-
-            
+                                            size=(self.picture_image.shape[1], self.picture_image.shape[2]),
+                                            )
 
         self.style_image = self.pre_process_image(original_style_image.reshape(self.e_image_shape).astype(K.floatx()))
-       
-    
+
         # Create style tensors
         style_outputs = self.get_convnet_output([self.style_image])
         style_tensors = [self.gramian(o) for o in style_outputs]
@@ -147,7 +149,7 @@ class NeuralStyler(object):
         print('Compiling loss and gradient functions')
 
         # Picture loss function
-        picture_loss_function = 0.5 * K.sum(K.square(picture_tensor - convnet.get_layer(content_layer).output))
+        picture_loss_function = 0.5 * K.sum(K.square(picture_tensor - convnet.get_layer(picture_layer).output))
 
         # Style loss function
         style_loss_function = 0.0
@@ -160,8 +162,8 @@ class NeuralStyler(object):
                  K.sum(K.square(style_tensors[i] - self.gramian(convnet.get_layer(style_layer).output))))
 
         # Composite loss function
-        composite_loss_function = (self.Content_loss_function_weight * picture_loss_function) + \
-                                  (self.Style_loss_function_weight * style_loss_function)
+        composite_loss_function = (self.alpha_picture * picture_loss_function) + \
+                                  (self.alpha_style * style_loss_function)
 
         loss_function_inputs = [convnet.get_layer(l).output for l in self.layers]
         loss_function_inputs.append(convnet.layers[0].input)
@@ -214,6 +216,7 @@ class NeuralStyler(object):
         print('Starting optimization with method: %r' % optimization_method)
 
         for _ in range(iterations):
+
             self.iteration += 1
 
             if self.verbose:
@@ -223,6 +226,7 @@ class NeuralStyler(object):
                      callback=self.callback, bounds=bounds, method=optimization_method)
 
             self.save_image(self.styled_image)
+
 
     def loss(self, image):
         outputs = self.get_convnet_output([image.reshape(self.e_image_shape).astype(K.floatx())])
@@ -254,7 +258,7 @@ class NeuralStyler(object):
             self.save_image(image)
 
     def save_image(self, image):
-        imsave(self.destination_folder + 'img_' + str(self.step) + '_' + str(self.iteration) + '.jpg',
+        imsave(self.picture_image_filepath.split(".")[0] + '_' + str(self.step) + '.jpg',
                self.post_process_image(image.reshape(self.e_image_shape).copy()))
 
     @staticmethod

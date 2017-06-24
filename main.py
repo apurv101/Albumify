@@ -1,11 +1,16 @@
 """`main` is the top level module for your Flask application."""
 
 # Import the Flask Framework
-from flask import Flask
-from flask import request
+
 from flask import render_template
 from flask import send_file
 from model import style_transfer
+
+from flask import Flask, current_app, request, jsonify
+import io
+import model
+import base64
+import logging
 import requests
 import time
 
@@ -22,7 +27,7 @@ def my_form():
 
 @app.route('/', methods=['POST'])
 def my_form_post():
-    text = request.form['text']
+    #text = request.form['text']
     # imageName = text.split("/")[-1]
     # contentImagePath = "images/input/"+imageName
     # outputImagePath = "images/output/"+imageName
@@ -32,9 +37,19 @@ def my_form_post():
     #     f.write(requests.get(text).content)
     #     f.close()
         #style_transfer("images/profile.jpg")
-    style_transfer()
+    # data = {}
+    # # try:
+    # data = request.get_json()['data']
+    # # except Exception:
+    # #     return jsonify(status_code='400', msg='Bad Request'), 400
 
-    # return send_file(outputImagePath,mimetype='image/jpg')
+    # data = base64.b64decode(data)
+
+    # image = io.BytesIO(data)
+    style_transfer('profile.jpg','DJ.jpg')
+
+    return send_file("profile_1.jpg",mimetype='image/jpg')
+    #return "Hello World"
 
 
 @app.errorhandler(404)
@@ -47,3 +62,7 @@ def page_not_found(e):
 def application_error(e):
     """Return a custom 500 error."""
     return 'Sorry, unexpected error: {}'.format(e), 500
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8080, debug=True)
