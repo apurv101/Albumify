@@ -2,7 +2,7 @@
 
 # Import the Flask Framework
 from flask import Flask
-from flask import request
+#from flask import request
 from flask import render_template
 from flask import send_file
 #from model import style_transfer
