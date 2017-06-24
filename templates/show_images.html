@@ -1,0 +1,15 @@
+
+<!DOCTYPE HTML>
+ <html>
+    <body> 
+
+    {% for image_url in urls %}
+
+
+   <img src="{{ url_for('static', filename = 'css/images/' + image_url) }}">
+	{% endfor %}
+
+
+
+   </body>
+ </html>

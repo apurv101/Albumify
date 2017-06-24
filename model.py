@@ -54,7 +54,7 @@ def style_transfer(content, style):
                                                'block5_conv1'))
 
     # Create styled image
-    neural_styler.fit(canvas='picture', iterations = 1, optimization_method='L-BFGS-B')
+    neural_styler.fit(canvas='picture', iterations = 2, optimization_method='L-BFGS-B')
 
     # return
 
@@ -64,7 +64,7 @@ class NeuralStyler(object):
     def __init__(self, picture_image_filepath, style_image_filepath, destination_folder,
                  weights_filepath=None,
                  alpha_picture=1.0, alpha_style=0.00001,
-                 save_every_n_steps=10,
+                 save_every_n_steps=5,
                  verbose=False,
                  convnet='VGG16',
                  picture_layer='block5_conv1',
@@ -109,7 +109,7 @@ class NeuralStyler(object):
                                              outputs=[convnet.get_layer(t).output for t in self.layers])
 
         # Load picture image
-        original_picture_image = imread(picture_image_filepath)
+        original_picture_image = imresize(imread(picture_image_filepath), size=(300,300))
 
         self.image_shape = (original_picture_image.shape[0], original_picture_image.shape[1], 3)
         self.e_image_shape = (1,) + self.image_shape
@@ -223,7 +223,7 @@ class NeuralStyler(object):
                 print('Starting iteration: %d' % self.iteration)
 
             minimize(fun=self.loss, x0=self.styled_image.flatten(), jac=self.loss_gradient,
-                     callback=self.callback, bounds=bounds, method=optimization_method)
+                     callback=self.callback, bounds=bounds, method=optimization_method, options={'disp': False, 'maxiter':20})
 
             self.save_image(self.styled_image)
 
@@ -257,8 +257,9 @@ class NeuralStyler(object):
         if self.step == 1 or self.step % self.save_every_n_steps == 0:
             self.save_image(image)
 
+
     def save_image(self, image):
-        imsave(self.picture_image_filepath.split(".")[0] + '_' + str(self.step) + '.jpg',
+        imsave("static/css/images/" + self.picture_image_filepath.split(".")[0] + '_' + str(self.step) + '.jpg',
                self.post_process_image(image.reshape(self.e_image_shape).copy()))
 
     @staticmethod
@@ -276,5 +277,6 @@ class NeuralStyler(object):
         image[:, :, :, 1] += 116.779
         image[:, :, :, 2] += 123.68
         return np.clip(image[:, :, :, ::-1], 0, 255).astype('uint8')[0]
+    
 
 

@@ -48,7 +48,11 @@ def my_form_post():
     # image = io.BytesIO(data)
     style_transfer('profile.jpg','DJ.jpg')
 
-    return send_file("profile_1.jpg",mimetype='image/jpg')
+    result_dir = os.getcwd() + "/static/css/images"
+
+    urls = [f for f in os.listdir(result_dir)]
+
+    return render_template("show_images.html", urls =urls)
     #return "Hello World"
 
 
