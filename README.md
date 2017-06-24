@@ -14,7 +14,6 @@ This is an app to generate beautiful artistic images by using the technique of s
    git clone https://github.com/defineapoorv/Albumify.git
    ```
 3. Install dependencies in the project's lib directory.
-   Note: App Engine can only import libraries from inside your project directory.
 
    ```
    cd Albumify
@@ -25,9 +24,9 @@ This is an app to generate beautiful artistic images by using the technique of s
    ```
    profile.jpg
    ```
-   and the image which you want to be the style of your image with the name
+   and the image which you want to be the style of your content image with the name
    ```
-   DJ.jpg
+   style.jpg
    ```
 
 
