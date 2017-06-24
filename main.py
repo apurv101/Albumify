@@ -51,7 +51,7 @@ def my_form_post():
 
     urls = [f for f in os.listdir(result_dir)]
 
-    return render_template("show_images.html", urls)
+    return render_template("show_images.html", urls = urls)
     #return "Hello World"
 
 
