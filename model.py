@@ -302,7 +302,7 @@ class NeuralStyler(object):
             original_style_image = imresize(original_style_image,
                                                  size=(self.picture_image.shape[1], self.picture_image.shape[2]),
                                              interp='lanczos')
-#             original_style_image = original_style_image.resize((170, 170),PIL.Image.BILINEAR)
+
             
 
         self.style_image = self.pre_process_image(original_style_image.reshape(self.e_image_shape).astype(K.floatx()))
@@ -444,7 +444,7 @@ class NeuralStyler(object):
 
 
 
-def style_transfer()
+def style_transfer():
     print('start')
     neural_styler = NeuralStyler(content_image_path='input/maggie-grace-portrait-wallpapers_14105_1024x768.jpg',
                                      style_image_path='output/darksideofthemoon.jpg',
