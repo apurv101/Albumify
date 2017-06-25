@@ -19,6 +19,12 @@ app = Flask(__name__)
 # the App Engine WSGI application server.
 
 
+def emptyDirectory(path):
+    filesToRemove = [f for f in os.listdir(path)]
+    for f in filesToRemove:
+        os.remove(os.path.join(path,f))
+    #[os.remove(f) for f in filesToRemove]
+
 @app.route('/')
 def my_form():
     """Return a friendly HTTP greeting."""
@@ -45,9 +51,10 @@ def my_form_post():
     # data = base64.b64decode(data)
 
     # image = io.BytesIO(data)
-    style_transfer('profile.jpg','style.jpg')
-
     result_dir = os.getcwd() + "/static/css/images"
+    emptyDirectory(path=result_dir)
+    style_transfer('profile.jpg','style.jpg')
+    #time.sleep(5)
 
     urls = [f for f in os.listdir(result_dir)]
 
